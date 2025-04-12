@@ -36,7 +36,10 @@ function addTask() {
   deleteButton.innerHTML = "Delete";
 
   deleteButton.addEventListener("click", () => {
-    li.remove();
+    li.style.animation = "slideOut 0.4s forwards";
+    li.addEventListener("animationend", () => {
+      li.remove();
+    });
   });
 
   li.appendChild(deleteButton);
