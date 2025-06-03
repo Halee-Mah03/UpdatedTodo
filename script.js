@@ -2,6 +2,8 @@ const addButton = document.getElementById("add-task");
 const inputElement = document.getElementById("task-input");
 const taskList = document.getElementById("task-list");
 
+window.addEventListener("DOMContentLoaded", loadTasks);
+
 addButton.addEventListener("click", () => {
   addTask();
 });
@@ -13,8 +15,8 @@ inputElement.addEventListener("keydown", (event) => {
   }
 });
 
-function addTask() {
-  const taskText = inputElement.value.trim();
+function addTask(taskObj) {
+  const taskText = taskObj ? taskObj.text : inputElement.value.trim();
 
   if (taskText === "") {
     document.getElementById("errorMessage").innerHTML =
@@ -27,9 +29,18 @@ function addTask() {
   const li = document.createElement("li");
   li.innerHTML = taskText;
 
-  // Mark as complete on click
+  if (taskObj && taskObj.completed) {
+    li.classList.add("completed");
+  }
+
   li.addEventListener("click", () => {
-    li.classList.toggle("completed");
+    li.classList.add("completed");
+    saveTasks();
+  });
+
+  li.addEventListener("dblclick", () => {
+    li.classList.remove("completed");
+    saveTasks();
   });
 
   const deleteButton = document.createElement("button");
@@ -39,10 +50,31 @@ function addTask() {
     li.style.animation = "slideOut 0.4s forwards";
     li.addEventListener("animationend", () => {
       li.remove();
+      saveTasks();
     });
   });
 
   li.appendChild(deleteButton);
   taskList.appendChild(li);
-  input.value = "";
+  inputElement.value = "";
+}
+
+function saveTasks() {
+  const tasks = [];
+  taskList.querySelectorAll("li").forEach((li) => {
+    tasks.push({
+      text: li.firstChild.textContent,
+      completed: li.classList.contains("completed"),
+    });
+  });
+
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+function loadTasks() {
+  const savedTasks = localStorage.getItem("tasks");
+  if (savedTasks) {
+    JSON.parse(savedTasks).forEach((task) => {
+      addTask(task);
+    });
+  }
 }
